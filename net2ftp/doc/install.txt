@@ -1,0 +1,60 @@
+Обновить пакеты
+sudo apt-get update
+
+Установить nginx, mysql (опционально для ведения логов в базу)
+sudo apt-get install nginx mysql-server
+sudo apt-get install php7.0-fpm php7.0-dev php7.0-mysql
+
+Скопировать файлы в директорию с подходящими правами, например в /var/www/[host]
+где host - имя хоста или любое другой подходящее имя.
+
+Назначить на директорию temp в папке проекта права 777
+
+Отредактировать файл /etc/nginx/sites-available/[host]
+
+Добавить в файл:
+
+server {
+        root [путь к проекту];
+        index index.php;
+
+        server_name [host];
+
+        error_log    /var/log/nginx/[host].error.log;
+
+        location / {
+                try_files $uri $uri/ /index.php?_url=$uri&$args;
+        }
+
+        location ~ \.php$ {
+                fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+                fastcgi_index index.php;
+
+                include fastcgi_params;
+                fastcgi_split_path_info       ^(.+\.php)(/.+)$;
+                fastcgi_param PATH_INFO       $fastcgi_path_info;
+                fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        }
+}
+
+Создать символьную ссылку на директорию:
+ln -s /etc/nginx/sites-enabled/[host]
+
+Перезапустить nginx:
+sudo service nginx restart
+
+Система должна запуститься.
+
+Если вам нужно хранить логи в базе данных, тогда:
+
+1. создайте базу данных MySQL
+2. импортируйте в нее структуру из файла sql/create_tables.sql
+3. отредактируйте настройки в файле settings.inc.php:
+    $net2ftp_settings["use_database"] = "yes"; // использоваться базу данных
+
+    // Enter your MySQL settings
+    $net2ftp_settings["dbusername"] = ""; // имя пользователя базы
+    $net2ftp_settings["dbpassword"] = ""; // пароль к базе
+    $net2ftp_settings["dbname"]     = ""; // имя базы
+    $net2ftp_settings["dbserver"]   = "localhost"; // хост базы данных

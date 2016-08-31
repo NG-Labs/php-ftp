@@ -1,0 +1,8 @@
+{
+    "name": "ngm/net2ftp-php7",
+    "description": "net2ftp made work on PHP7",
+    "require": {
+        "php": "^7.0",
+    }
+}
+
